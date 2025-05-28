@@ -18,7 +18,7 @@
 ## Overview
 Architecture of the 3DiTraj
 
-<img src="figures/method_overview.jpg" alt="method" width="800"/>
+<img src="figures/method_overview.png" alt="method" width="800"/>
 
 ## Installation
 See [INSTALL.md](INSTALL.md) for detailed instructions in installation.
