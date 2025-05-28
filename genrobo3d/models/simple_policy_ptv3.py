@@ -234,7 +234,13 @@ class SimplePolicyPTV3AdaNorm(BaseModel):
 
         point_outs = self.ptv3_model(ptv3_batch, return_dec_layers=True)
 
-        
+        # pc_token = point_outs[-1].feat 
+
+        # # predefine
+        # npoints_in_batch = batch['npoints_in_batch']
+        # gt_seq = batch['gt_actions'] 
+        # step_ids = batch['step_ids']         
+
         pred_actions = self.act_proj_head(
             point_outs[-1].feat, batch['npoints_in_batch'], coords=point_outs[-1].coord,
             temp=self.config.action_config.get('pos_heatmap_temp', 1),

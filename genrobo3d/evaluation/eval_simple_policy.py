@@ -1,6 +1,12 @@
 from typing import Tuple, Dict, List
 
 import os
+import ctypes
+
+os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = "/home/uhcc/Desktop/robot-3dlotus/CoppeliaSim_Edu_V4_1_0_Ubuntu20_04"
+os.environ['LD_LIBRARY_PATH'] = "/home/uhcc/Desktop/robot-3dlotus/CoppeliaSim_Edu_V4_1_0_Ubuntu20_04:" + os.environ.get('LD_LIBRARY_PATH', '')
+ctypes.CDLL("/home/uhcc/Desktop/robot-3dlotus/CoppeliaSim_Edu_V4_1_0_Ubuntu20_04/libcoppeliaSim.so.1")
+
 import json
 import jsonlines
 import tap
@@ -14,7 +20,10 @@ from scipy.special import softmax
 
 # TODO: error when import in a different order: Error /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.34’ not found or /lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29' not found
 # TODO: always import torch first
-import open3d as o3d
+try:
+    import open3d as o3d
+except ImportError:
+    print("Open3D could not be imported.")
 from sklearn.neighbors import LocalOutlierFactor
 from scipy.spatial.transform import Rotation as R
 
@@ -33,7 +42,6 @@ from genrobo3d.utils.robot_box import RobotBox
 from genrobo3d.train.datasets.common import gen_seq_masks
 from genrobo3d.evaluation.common import write_to_file
 from genrobo3d.vlm_models.clip_encoder import ClipEncoder
-
 
 class Arguments(tap.Tap):
     exp_config: str
@@ -359,6 +367,8 @@ def evaluate_actioner(args):
     if len(args.image_size) == 1:
         args.image_size = [args.image_size[0], args.image_size[0]]    # (height, width)
 
+
+    print (pred_dir)
     outfile = os.path.join(pred_dir, 'results.jsonl')
 
     existed_data = set()
@@ -368,6 +378,7 @@ def evaluate_actioner(args):
                 existed_data.add((item['checkpoint'], '%s+%d'%(item['task'], item['variation'])))
 
     if (args.checkpoint, args.taskvar) in existed_data:
+        print(">> Skipping evaluation: already in results file")
         return
 
     env = RLBenchEnv(
@@ -433,5 +444,17 @@ def evaluate_actioner(args):
 if __name__ == '__main__':
     args = Arguments().parse_args(known_only=True)
     args.remained_args = args.extra_args
+
+    print(">> About to create RLBenchEnv")
+    env = RLBenchEnv(
+        data_path=args.microstep_data_dir,
+        apply_rgb=True,
+        apply_pc=True,
+        apply_mask=True,
+        headless=args.headless,
+        image_size=args.image_size,
+        cam_rand_factor=args.cam_rand_factor,
+    )
+    print(">> RLBenchEnv created successfully")
     
     evaluate_actioner(args)

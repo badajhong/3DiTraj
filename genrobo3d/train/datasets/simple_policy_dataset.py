@@ -181,7 +181,7 @@ class SimplePolicyDataset(Dataset):
         return xyz, ee_pose, gt_action, gt_rot
     
     def get_groundtruth_rotations(self, ee_poses):
-        gt_rots = torch.from_numpy(ee_poses)   # quaternions
+        gt_rots = torch.from_numpy(ee_poses.copy())   # quaternions
         if self.rot_type == 'euler':    # [-1, 1]
             gt_rots = self.rotation_transform.quaternion_to_euler(gt_rots[1:]) / 180.
             gt_rots = torch.cat([gt_rots, gt_rots[-1:]], 0)
