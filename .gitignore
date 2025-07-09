@@ -1,3 +1,6 @@
 PyRep/
 RLBench/
 dependencies/Pointnet2_PyTorch/
+dependencies/
+data/
+genrobo3d.*
