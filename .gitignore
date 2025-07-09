@@ -1,3 +1,5 @@
 PyRep/
 RLBench/
 dependencies/Pointnet2_PyTorch/
+data/
+dependencies/
