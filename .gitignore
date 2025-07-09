@@ -3,3 +3,7 @@ RLBench/
 dependencies/Pointnet2_PyTorch/
 data/
 dependencies/
+*.pyc
+wandb/
+__pycache__
+pretrained/

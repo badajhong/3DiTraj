@@ -147,7 +147,7 @@ class DiTBlock(nn.Module):
             nn.Linear(hidden_size, 6 * hidden_size, bias=True)
         )
 
-    def forward(self, x, c, pc_token=None, npoints_in_batch=None):
+    def forward(self, x, c, pc_token=None):
         shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = self.adaLN_modulation(c).chunk(6, dim=1)
         x = x + gate_msa.unsqueeze(1) * self.self_attn(modulate(self.norm1(x), shift_msa, scale_msa))
 
@@ -197,7 +197,7 @@ class DiT(nn.Module):
         mlp_ratio=4.0,
         action_dropout_prob=0.1,
         learn_sigma=True,
-        max_seq_len=25,
+        max_seq_len=30,
     ):
         super().__init__()
         self.learn_sigma = learn_sigma
@@ -248,7 +248,7 @@ class DiT(nn.Module):
         nn.init.constant_(self.final_layer.linear.weight, 0)
         nn.init.constant_(self.final_layer.linear.bias, 0)
 
-    def forward(self, x, t, y, m=None, s=None, pc_token=None, npoints_in_batch=None):
+    def forward(self, x, t, y, pc_token=None):
         """
         Forward pass of DiT.
         x: (N, n, 8) tensor of spatial inputs 
@@ -262,9 +262,10 @@ class DiT(nn.Module):
         c = t + y                                                   # (batch, hidden_size)
                                                   
         for block in self.blocks:
-            x = block(x, c, pc_token, npoints_in_batch)             # (B, T, D)
+            x = block(x, c, pc_token)             # (B, T, D)
         x = self.final_layer(x, c)                                  # (B, T, patch_size ** 2 * out_channels)
         x = x.contiguous().view(-1, 8) 
+        x = torch.tanh(x) # (batch * maxstep, 8)
         return x
 
 #################################################################################
