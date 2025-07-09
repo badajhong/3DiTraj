@@ -4,8 +4,5 @@ dependencies/Pointnet2_PyTorch/
 dependencies/
 data/
 genrobo3d.*
-<<<<<<< HEAD
-=======
 *.pyc
 pretrained/
->>>>>>> cb0ed38 (update)
