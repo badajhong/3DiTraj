@@ -187,7 +187,7 @@ def set_cuda(opts) -> Tuple[bool, int, torch.device]:
             LOGGER.info(f"Found {dist.get_world_size()} GPUs")
     else:
         default_gpu = True
-        device = torch.device("cuda")
+        device = torch.device("cuda:"+str(opts.device))
         n_gpu = torch.cuda.device_count()
 
     return default_gpu, n_gpu, device

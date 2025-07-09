@@ -4,7 +4,7 @@ ptv3_output_dir: 'pretrained/ptv3/best.pt'
 tfboard_log_dir: null # 'data/TFBoard/xxx'
 checkpoint: null
 checkpoint_strict_load: False # true, false
-
+device: 2
 world_size: 1 # 2025_05_14 added for using single gpu
 
 wandb_project: stage2_dit
