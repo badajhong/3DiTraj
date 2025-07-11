@@ -22,3 +22,4 @@ data/
 genrobo3d/models/DiT_origin/
 wandb/
 *.tar.xz
+*.wandb
