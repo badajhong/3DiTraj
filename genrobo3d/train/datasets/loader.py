@@ -159,7 +159,7 @@ def build_dataloader(dataset, collate_fn, is_train: bool, opts, batch_size=None)
         num_workers=opts.TRAIN.n_workers,
         pin_memory=opts.TRAIN.pin_mem,
         collate_fn=collate_fn,
-        drop_last=False,
+        drop_last=True,
         prefetch_factor=2 if opts.TRAIN.n_workers > 0 else None,
     )
 

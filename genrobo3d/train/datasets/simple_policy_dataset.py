@@ -419,13 +419,16 @@ if __name__ == '__main__':
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
+    # 'data/gembench/val_dataset/keysteps_bbox_pcd/seed100/voxel1cm',
+    # 'data/gembench/train_dataset/keysteps_bbox_pcd/instr_embeds_clip.npy',
+
     dataset = SimplePolicyDataset(
         'data/gembench/train_dataset/keysteps_bbox_pcd/seed0/voxel1cm',
         'data/gembench/train_dataset/keysteps_bbox_pcd/instr_embeds_clip.npy',
         'assets/taskvars_instructions_new.json',
         taskvar_file='assets/taskvars_train.json', 
-        num_points=4096, xyz_norm=True, xyz_shift='center',
-        use_height=False, rot_type='euler_delta', 
+        num_points=4096, xyz_norm=False, xyz_shift='none',
+        use_height=False, rot_type='quat', 
         instr_embed_type='last', include_last_step=True,
         rm_robot='box_keep_gripper', rm_table=True,
         all_step_in_batch=True, same_npoints_per_example=False,
@@ -435,7 +438,7 @@ if __name__ == '__main__':
     print('#data', len(dataset))
 
     dataloader = torch.utils.data.DataLoader(
-        dataset, batch_size=100, shuffle=True, num_workers=0, 
+        dataset, batch_size=3100, shuffle=True, num_workers=0, 
         collate_fn=ptv3_collate_fn
     )
     print('#steps', len(dataloader))

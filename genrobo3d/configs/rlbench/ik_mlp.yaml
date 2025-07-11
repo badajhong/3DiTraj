@@ -1,0 +1,57 @@
+SEED: 2024
+output_dir: 'data/experiments/gembench/ik_mlp_0711'
+tfboard_log_dir: null 
+checkpoint: null
+checkpoint_strict_load: False # true, false
+
+world_size: 1 # single GPU
+
+wandb_project: ik_mlp
+wandb_run_name: ik_mlp_0711
+
+TRAIN:
+  resume_training: True
+  resume_encoder_only: False
+  freeze_params:
+    encoder: False
+    decoder: False
+
+  train_batch_size: 512
+  val_batch_size: 512
+  
+  gradient_accumulation_steps: 1
+  num_epochs: null
+  num_train_steps: &NUM_STEPS 300000
+  warmup_steps: 500
+  log_steps: 1000
+  save_steps: 10000
+  val_steps: 1000
+
+  optim: 'adam'
+  learning_rate: 5e-4
+  lr_sched: 'cosine' # inverse_sqrt, linear, cosine, cosine_cycle
+  num_cosine_cycles: null # float
+  betas: [0.9, 0.98]
+  weight_decay: 0.01
+  grad_norm: 10
+  n_workers: 4
+  pin_mem: True
+
+TRAIN_DATASET:
+  data_dir: 'data/gembench/GemBench/train/'
+  taskvar_file: 'assets/taskvars_train_ik_mlp.json'
+
+VAL_DATASET:
+  use_val: True
+  data_dir: 'data/gembench/GemBench/val/'
+  taskvar_file: 'assets/taskvars_train_ik_mlp.json'
+  
+MODEL:
+  model_class: 'IKMLP'
+  ik_mlp:
+    input_dim: 7 # gripper pose
+    output_dim: 7 # joint angles
+    hidden_dim: 256
+    num_layers: 4
+    dropout: 0.1
+    activation: 'relu' # relu, gelu, swish, tanh, sigmoid

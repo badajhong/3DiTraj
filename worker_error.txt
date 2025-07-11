@@ -1,0 +1,30 @@
+[Worker error] Traceback (most recent call last):
+  File "/home/uhcc/Desktop/robot-3dlotus/genrobo3d/train/datasets/ptv3_dit_policy_dataset.py", line 283, in __getitem__
+    raise IndexError(f"Invalid timestep t={t} for joint_data of length {len(joint_data)}")
+IndexError: Invalid timestep t=2 for joint_data of length 2
+
+[Worker error] Traceback (most recent call last):
+  File "/home/uhcc/Desktop/robot-3dlotus/genrobo3d/train/datasets/ptv3_dit_policy_dataset.py", line 283, in __getitem__
+    raise IndexError(f"Invalid timestep t={t} for joint_data of length {len(joint_data)}")
+IndexError: Invalid timestep t=4 for joint_data of length 4
+
+[Worker error] Traceback (most recent call last):
+  File "/home/uhcc/Desktop/robot-3dlotus/genrobo3d/train/datasets/ptv3_dit_policy_dataset.py", line 283, in __getitem__
+    raise IndexError(f"Invalid timestep t={t} for joint_data of length {len(joint_data)}")
+IndexError: Invalid timestep t=2 for joint_data of length 2
+
+[Worker error] Traceback (most recent call last):
+  File "/home/uhcc/Desktop/robot-3dlotus/genrobo3d/train/datasets/ptv3_dit_policy_dataset.py", line 283, in __getitem__
+    raise IndexError(f"Invalid timestep t={t} for joint_data of length {len(joint_data)}")
+IndexError: Invalid timestep t=2 for joint_data of length 2
+
+[Worker error] Traceback (most recent call last):
+  File "/home/uhcc/Desktop/robot-3dlotus/genrobo3d/train/datasets/ptv3_dit_policy_dataset.py", line 283, in __getitem__
+    raise IndexError(f"Invalid timestep t={t} for joint_data of length {len(joint_data)}")
+IndexError: Invalid timestep t=2 for joint_data of length 2
+
+[Worker error] Traceback (most recent call last):
+  File "/home/uhcc/Desktop/robot-3dlotus/genrobo3d/train/datasets/ptv3_dit_policy_dataset.py", line 283, in __getitem__
+    raise IndexError(f"Invalid timestep t={t} for joint_data of length {len(joint_data)}")
+IndexError: Invalid timestep t=4 for joint_data of length 4
+

@@ -1,0 +1,7 @@
+{
+  "checkpoint": "data/experiments/gembench/stage2_dit_0617/ckpts/model_step_11000.pt",
+  "task": "open_box",
+  "variation": 0,
+  "num_demos": 20,
+  "success_rate": 0.55
+}

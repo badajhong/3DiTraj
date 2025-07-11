@@ -26,7 +26,7 @@ from rlbench.backend.utils import rgb_handles_to_mask
 from .coord_transforms import convert_gripper_pose_world_to_image, quat_to_euler, euler_to_quat
 # from .visualize import plot_attention
 from .recorder import TaskRecorder, StaticCameraMotion, CircleCameraMotion, AttachedCameraMotion
-
+import time
 
 CAMERA_ATTR = {
     "front": "_cam_front",

@@ -1,0 +1,7 @@
+{
+  "checkpoint": "data/experiments/gembench/stage2_dit_0617/ckpts/model_step_11000.pt",
+  "task": "pick_up_cup",
+  "variation": 8,
+  "num_demos": 20,
+  "success_rate": 0.0
+}

@@ -1,0 +1,7 @@
+{
+  "checkpoint": "data/experiments/gembench/stage2_dit_0617/ckpts/model_step_11000.pt",
+  "task": "put_groceries_in_cupboard",
+  "variation": 3,
+  "num_demos": 20,
+  "success_rate": 0.0
+}

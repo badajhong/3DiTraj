@@ -16,7 +16,7 @@ from genrobo3d.models.PointTransformerV3.model_ca import PointTransformerV3CA
 from genrobo3d.utils.action_position_utils import get_best_pos_from_disc_pos
 
 from torch.nn.utils.rnn import pad_sequence
-from .dit import DiT
+from .DiT.models import DiT
 
 class ActionHead(nn.Module):
     def __init__(
@@ -253,49 +253,6 @@ class SimplePolicyPTV3AdaNorm(BaseModel):
         # input of DiT & act_proj_head
         pc_token = point_outs[-1].feat 
 
-        # predefine
-        npoints_in_batch = batch['npoints_in_batch']
-        gt_seq = batch.get('gt_actions', None)
-        if gt_seq is not None:
-            dim = int(batch['gt_actions'].shape[1])
-        else:
-            dim = 8
-        step_ids = batch['step_ids'] 
-
-        final_step_mask = torch.cat([
-            (step_ids[1:] == 0),
-            torch.tensor([True], device=step_ids.device)
-        ]) # Masking the last steps of task
-
-        max_steps = 25 
-        assert max_steps > max(step_ids) -1     # You have to increase number of max_steps
-
-        batch_size = int(final_step_mask.sum().item()) 
-        point_dim = int(pc_token.shape[1])
-
-        pc_mask = step_ids == 0
-
-        pc_token_chunks = torch.split(pc_token, npoints_in_batch)
-        selected_chunks = [chunk for chunk, use in zip(pc_token_chunks, pc_mask) if use] # List[Tensor of shape [npoints_in_batch, 128]]
-
-        # Max-Pooling
-        max_pooling_chunks = [torch.max(chunk, dim=0)[0] for chunk in selected_chunks]
-        mask_pc_token = torch.stack(max_pooling_chunks, dim=0)
-        
-        mask_pc_token = torch.zeros((batch_size, max_steps, point_dim), device=device)
-        for i in range(batch_size):
-            mask_pc_token[i, :, :] = max_pooling_chunks[i].unsqueeze(0).expand(max_steps, -1) # (batch, max_steps, 128)
-          
-        mask_npoints_in_batch = torch.tensor(
-            [chunk.shape[0] for chunk in selected_chunks],
-            device=pc_token.device
-        ) 
-
-        padding_mask_npoints_in_batch = torch.tensor(
-            [chunk.shape[0] for chunk in selected_chunks for i in range(25)],
-            device=pc_token.device
-        ) 
-
         # TODO to predict only the initial task space pc to last trajectory output (could be heatmap)
         pred_actions = self.act_proj_head(
             point_outs[-1].feat, batch['npoints_in_batch'], coords=point_outs[-1].coord,
@@ -356,10 +313,50 @@ class SimplePolicyPTV3AdaNorm(BaseModel):
             pred_rot = np.stack([discrete_euler_to_quaternion(x, self.act_proj_head.euler_resolution) for x in pred_rot], 0)
             pred_rot = torch.from_numpy(pred_rot).to(device)
  
+
+        # predefine
+        npoints_in_batch = batch['npoints_in_batch']
+        gt_seq = batch.get('gt_actions', None)
+        if gt_seq is not None:
+            dim = int(batch['gt_actions'].shape[1])
+            step_ids = batch['step_ids'] 
+            pc_mask = step_ids == 0
+        else:
+            # For predictions
+            dim = 8 # for quat only
+            step_ids = batch['step_ids'] 
+            pc_mask = torch.tensor([True], device=step_ids.device)
+
+        final_step_mask = torch.cat([
+            (step_ids[1:] == 0),
+            torch.tensor([True], device=step_ids.device)
+        ]) # Masking the last steps of task
+
+        max_steps = 25 
+        assert max_steps > max(step_ids) -1     # You have to increase number of max_steps
+
+        batch_size = int(final_step_mask.sum().item()) 
+        point_dim = int(pc_token.shape[1])
+
+
+        pc_token_chunks = torch.split(pc_token, npoints_in_batch)
+        selected_chunks = [chunk for chunk, use in zip(pc_token_chunks, pc_mask) if use] # List[Tensor of shape [npoints_in_batch, 128]]
+
+        # Max-Pooling
+        max_pooling_chunks = [torch.max(chunk, dim=0)[0] for chunk in selected_chunks]
+        mask_pc_token = torch.stack(max_pooling_chunks, dim=0)
+        
+        mask_pc_token = torch.zeros((batch_size, max_steps, point_dim), device=device)
+        for i in range(batch_size):
+            mask_pc_token[i, :, :] = max_pooling_chunks[i].unsqueeze(0).expand(max_steps, -1) # (batch, max_steps, 128)
+
         final_pred_actions = torch.cat([pred_pos, pred_rot, pred_open.unsqueeze(-1)], dim=-1)
 
         final_pred_actions = final_pred_actions[final_step_mask] # (batch, 8)
-        final_gt_actions = batch['gt_actions'][final_step_mask]
+        if gt_seq is not None:
+            final_gt_actions = batch['gt_actions'][final_step_mask]
+        else:
+            final_gt_actions = final_pred_actions[final_step_mask]
 
         # Define padding of gt_seq, mask, step_ids
         padding_gt_seq = torch.zeros((batch_size, max_steps, dim), device=device)  
@@ -399,8 +396,20 @@ class SimplePolicyPTV3AdaNorm(BaseModel):
 
         padding_gt_seq = padding_gt_seq.contiguous().view(-1, 8)   # (batch * max_steps, 8)
         padding_mask = padding_mask.reshape(-1)   # (batch * max_steps, )
-        
+
+        mask_npoints_in_batch = torch.tensor(
+            [chunk.shape[0] for chunk in selected_chunks],
+            device=pc_token.device
+        ) 
+
+        padding_mask_npoints_in_batch = torch.tensor(
+            [chunk.shape[0] for chunk in selected_chunks for i in range(25)],
+            device=pc_token.device
+        ) 
+
         if compute_loss:
+
+            print ("hhhhhhhhhhhhhhhhhhhhh")
             loss_final = self.compute_loss(
                 final_pred_actions, final_gt_actions, 
                 disc_pos_probs=batch.get('disc_pos_probs', None), 

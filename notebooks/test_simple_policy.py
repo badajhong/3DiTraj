@@ -8,6 +8,7 @@ from genrobo3d.rlbench.environments import RLBenchEnv, Mover
 from genrobo3d.train.utils.misc import set_random_seed
 from genrobo3d.evaluation.eval_simple_policy import Actioner
 from rlbench.backend.utils import task_file_to_task_class
+from time import sleep
 
 os.chdir('..') # locate in the robot-3dlotus directory
 
@@ -18,8 +19,8 @@ ctypes.CDLL("/home/uhcc/Desktop/robot-3dlotus/CoppeliaSim_Edu_V4_1_0_Ubuntu20_04
 
 
 model_args = EasyDict(
-    exp_config='data/experiments/gembench/3dlotus/v2/logs/training_config.yaml',
-    checkpoint='data/experiments/gembench/3dlotus/v2/ckpts/model_step_40000.pt',
+    exp_config='/home/uhcc/Desktop/robot-3dlotus/data/experiments/gembench/3dlotus/v2/logs/training_config.yaml',
+    checkpoint='/home/uhcc/Desktop/robot-3dlotus/data/experiments/gembench/3dlotus/v2/ckpts/model_step_40000.pt',
     device='cuda',
     real_robot=False,
     save_obs_outs_dir=None,
@@ -28,19 +29,23 @@ model_args = EasyDict(
     remained_args={},
 )
 
-seed = 90
+seed = 10
 set_random_seed(seed)
-
-taskvar = 'pick_up_cup+8'
-task_str, variation_id = taskvar.split('+')
-variation_id = int(variation_id)
 
 image_size = [256, 256]
 mover_max_tries = 10
 max_steps = 25
 
 actioner = Actioner(model_args)
-taskvar = 'pick_up_cup+8'
+# taskvar = 'open_door+0'
+# taskvar = 'close_microwave+0'
+# taskvar = 'push_button+0'
+taskvar = 'close_jar_peract+16'
+# taskvar = 'pick_up_cup+9'
+
+# taskvar = 'close_laptop_lid+0'
+# taskvar = 'close_laptop_lid+0'
+# taskvar = 'close_fridge+0'
 task_str, variation_id = taskvar.split('+')
 variation_id = int(variation_id)
 
@@ -68,12 +73,14 @@ instructions, obs = task.reset()
 
 print('Instructions:', instructions)
 
+obs_state_dict = env.get_observation(obs)
+move.reset(obs_state_dict['gripper'])
+
+
 print('Initial observation')
 plt.imshow(np.concatenate([obs.left_shoulder_rgb, obs.right_shoulder_rgb, obs.wrist_rgb, obs.front_rgb], 1))
 plt.show()
 
-obs_state_dict = env.get_observation(obs)
-move.reset(obs_state_dict['gripper'])
 
 for step_id in range(max_steps):
     # fetch the current observation, and predict one action
@@ -88,6 +95,7 @@ for step_id in range(max_steps):
 
     output = actioner.predict(**batch)
     action = output["action"]
+    print (action)
 
     if action is None:
         break
