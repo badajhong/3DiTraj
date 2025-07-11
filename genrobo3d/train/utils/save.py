@@ -23,18 +23,29 @@ class ModelSaver(object):
         self.prefix = prefix
         self.suffix = suffix
 
-    def save(self, model, step, optimizer=None, rewrite_optimizer=False):
+    def save(self, model, step, optimizer=None, ema_model=None, rewrite_optimizer=False):
+        # --- Save the standard model (no changes here) ---
         output_model_file = os.path.join(self.output_dir,
                                  f"{self.prefix}_{step}.{self.suffix}")
         state_dict = {}
         for k, v in model.state_dict().items():
             if k.startswith('module.'):
                 k = k[7:]
-            if isinstance(v, torch.Tensor):
-                state_dict[k] = v.cpu()
-            else:
-                state_dict[k] = v
+            state_dict[k] = v.cpu() if isinstance(v, torch.Tensor) else v
         torch.save(state_dict, output_model_file)
+
+        # --- ADD THIS BLOCK TO SAVE THE EMA MODEL ---
+        if ema_model is not None:
+            output_ema_file = os.path.join(self.output_dir,
+                                     f"ema_{self.prefix}_{step}.{self.suffix}")
+            ema_state_dict = {}
+            for k, v in ema_model.state_dict().items():
+                if k.startswith('module.'):
+                    k = k[7:]
+                ema_state_dict[k] = v.cpu() if isinstance(v, torch.Tensor) else v
+            torch.save(ema_state_dict, output_ema_file)
+            
+        # --- Save the optimizer state (no changes here) ---
         if optimizer is not None:
             dump = {'step': step, 'optimizer': optimizer.state_dict()}
             if hasattr(optimizer, '_amp_stash'):
@@ -43,5 +54,3 @@ class ModelSaver(object):
                 torch.save(dump, f'{self.output_dir}/train_state_latest.pt')
             else:
                 torch.save(dump, f'{self.output_dir}/train_state_{step}.pt')
-
-

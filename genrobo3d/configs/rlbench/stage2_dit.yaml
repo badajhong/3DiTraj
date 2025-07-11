@@ -1,5 +1,5 @@
 SEED: 2024
-output_dir: 'data/experiments/gembench/stage2_dit_0617_1315/'
+output_dir: 'data/experiments/gembench/chidit/'
 ptv3_output_dir: 'pretrained/ptv3/best.pt'
 tfboard_log_dir: null # 'data/TFBoard/xxx'
 checkpoint: null
@@ -8,7 +8,8 @@ checkpoint_strict_load: False # true, false
 world_size: 1 # 2025_05_14 added for using single gpu
 
 wandb_project: stage2_dit
-wandb_run_name: stage2_dit_0617_1315
+wandb_run_name: stage2_chidit
+
 
 TRAIN:
   resume_training: True
@@ -17,7 +18,7 @@ TRAIN:
     encoder: False
     decoder: False
 
-  train_batch_size: 16
+  train_batch_size: &BATCH 16
   val_batch_size: 16
 
   gradient_accumulation_steps: 1
@@ -26,7 +27,7 @@ TRAIN:
   warmup_steps: 500
   log_steps: 100
   save_steps: 1000
-  val_steps: 1000
+  val_steps: 500
 
   optim: 'adamw'
   learning_rate: 1e-3
@@ -164,11 +165,16 @@ MODEL:
     best_disc_pos: max # max, ens1
 
   dit_config:
-    depth: 28
+    depth: 128
     action_dropout_prob: 0.1
+    train_batch_size: *BATCH
+    max_steps: 30
+    cfg_scale: 4.0
+    sampling_timesteps: 50
+    num_timesteps: 100
 
   loss_config:
     pos_weight: 1
     rot_weight: 1
-    joint_weight: 2
-    open_weight: 0.1
+    joint_weight: 0.7
+    open_weight: 0.3

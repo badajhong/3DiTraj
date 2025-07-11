@@ -202,12 +202,13 @@ class DiT(nn.Module):
         super().__init__()
         self.learn_sigma = learn_sigma
         self.in_channels = in_channels
-        self.out_channels = out_channels
+        self.out_channels = out_channels * 2 if learn_sigma else out_channels
         self.num_heads = num_heads
 
         self.x_embedder = nn.Linear(in_channels, hidden_size)
         self.t_embedder = TimestepEmbedder(hidden_size)
         self.y_embedder = ActionEmbedder(hidden_size, action_dropout_prob)
+        
         # Will use fixed sin-cos embedding: 
         self.pos_embed = nn.Parameter(torch.randn(1, max_seq_len, hidden_size))
 
@@ -229,9 +230,6 @@ class DiT(nn.Module):
         # Initialize (and freeze) pos_embed by sin-cos embedding:
         pos_embed = get_1d_sincos_pos_embed(self.pos_embed.shape[-1], self.pos_embed.shape[1])
         self.pos_embed.data.copy_(torch.from_numpy(pos_embed).float().unsqueeze(0))
-
-        # Initialize action embedding table:
-        # nn.init.normal_(self.y_embedder.embedding_table.weight, std=0.02)
 
         # Initialize timestep embedding MLP:
         nn.init.normal_(self.t_embedder.mlp[0].weight, std=0.02)
@@ -255,17 +253,16 @@ class DiT(nn.Module):
         t: (N,) tensor of diffusion timesteps
         y: (N,) tensor of action vector
         """
-        x = self.x_embedder(x)                   # (N, n, D), where n = steps of task
+        x = self.x_embedder(x)                                      # (N, n, D), where n = steps of task
         x = x + self.pos_embed
         t = self.t_embedder(t)                                      # (batch, hidden_size)
         y = self.y_embedder(y, self.training)                       # (batch, hidden_size)
         c = t + y                                                   # (batch, hidden_size)
                                                   
         for block in self.blocks:
-            x = block(x, c, pc_token)             # (B, T, D)
+            x = block(x, c, pc_token)                               # (B, T, D)
         x = self.final_layer(x, c)                                  # (B, T, patch_size ** 2 * out_channels)
         x = x.contiguous().view(-1, 8) 
-        x = torch.tanh(x) # (batch * maxstep, 8)
         return x
 
 #################################################################################

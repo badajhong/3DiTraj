@@ -7,3 +7,4 @@ dependencies/
 wandb/
 __pycache__
 pretrained/
+nohup.out
